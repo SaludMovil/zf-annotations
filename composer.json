@@ -1,0 +1,13 @@
+{
+    "name": "desyncr/zf-annotations",
+    "version": "0.0.1",
+    "description": "ZF Annotations is a ZF2 module for custom annotations.",
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Desyncr\\ZfAnnotations": "src/"
+        }
+    }
+}
