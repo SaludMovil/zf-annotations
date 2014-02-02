@@ -52,8 +52,7 @@ class Annotations
      */
     protected function setUpAnnotationReader($config)
     {
-        $autoload = array();
-        $autoload[] = array('Desyncr\\Annotations', __DIR__ . '/../../../');
+        $autoload = array('Desyncr\\Annotations' => __DIR__ . '/../../../');
 
         if (isset($config['zf-annotations']['autoload'])) {
             $autoload = array_replace_recursive(

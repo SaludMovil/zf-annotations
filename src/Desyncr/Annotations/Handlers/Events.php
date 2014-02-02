@@ -29,7 +29,12 @@ class Events
     /**
      * @var
      */
-    private $_e;
+    protected $e;
+
+    /**
+     * @var
+     */
+    protected $eventHandlers;
 
     /**
      * Set ups the annotation driver
@@ -38,8 +43,29 @@ class Events
      */
     public function __construct($e)
     {
-        $this->_e = $e;
+        $this->e = $e;
+        $config = $e->getApplication()->getServiceManager()->get('config');
+
         $this->annotations = new Annotations($e);
+        $this->setUpEventHandlers($config);
+    }
+
+    /**
+     * setUpEventHandlers
+     *
+     * @param Array $config Configuration
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function setUpEventHandlers($config)
+    {
+        if (isset($config['zf-annotations']['event_handlers'])) {
+            $this->eventHandlers = $config['zf-annotations']['event_handlers'];
+        } else {
+            throw new \Exception('No event handlers defined!');
+        }
+
     }
 
     /**
@@ -58,7 +84,7 @@ class Events
             $target->getInstance(),
             $controller,
             $action,
-            "Desyncr\\Annotations\\Annotations\\${event}"
+            "Desyncr\\Annotations\\Events\\${event}"
         );
     }
 
@@ -71,7 +97,7 @@ class Events
      */
     private function _handleAliases($controller)
     {
-        $config = $this->_e->getApplication()->getServiceManager()->get('config');
+        $config = $this->e->getApplication()->getServiceManager()->get('config');
         $invokables = $config['controllers']['invokables'];
         $iterations = 0;
         $max = 10;
@@ -127,10 +153,7 @@ class Events
         $arrAnnotations
     ) {
         foreach ($arrAnnotations as $annotation) {
-
-            if (\get_class($annotation) != $event
-                && !in_array($event, array_keys(\class_parents($annotation)))
-            ) {
+            if (!$this->_handlesEvent($annotation, $event)) {
                 continue;
             }
 
@@ -146,9 +169,33 @@ class Events
                 );
 
             } else {
-                $this->_executeHook($instance, $controller, $annotation);
+                $this->_executeHook($instance, $annotation);
 
             }
+        }
+    }
+
+    /**
+     * _handlesEvent
+     *
+     * @param Object $annotation Annotation
+     * @param String $event      Event
+     *
+     * @return mixed
+     */
+    private function _handlesEvent($annotation, $event)
+    {
+        if (!isset($this->eventHandlers[$event])) {
+            return false;
+        }
+        $eventHandler = $this->eventHandlers[$event];
+        if (\get_class($annotation) == $eventHandler
+            || in_array(
+                $eventHandler,
+                array_keys(\class_parents($annotation))
+            )
+        ) {
+            return true;
         }
     }
 
@@ -174,7 +221,7 @@ class Events
             );
         }
 
-        if ($handler->setUp($instance, $this->_e, $annotation) !== false) {
+        if ($handler->setUp($instance, $this->e, $annotation) !== false) {
             $handler->execute($instance);
         }
         $handler->tearUp();
@@ -184,26 +231,105 @@ class Events
      * Executes a controller annotation block
      *
      * @param Object $instance   Controller instance
-     * @param String $controller Controller class name
      * @param Object $annotation Annotation instance
      *
      * @return mixed
      * @throws \Exception
      */
-    private function _executeHook($instance, $controller, $annotation)
+    private function _executeHook($instance, $annotation)
     {
-        $action = \lcfirst($annotation->value);
-        list($class, $method) = explode('::', $action);
-
-        if (isset($method)) {
-            if (!\class_exists($class)) {
-                throw new \Exception(
-                    "Class '$class' doesn't exists. Forgot to include it?"
-                );
-            }
-            \call_user_func($action, $this->_e->getApplication());
+        $annotation = $this->_parseAnnotationDefinition($annotation->value);
+        if ($annotation['class']) {
+            $this->_executeStaticHook(
+                $annotation['class'],
+                $annotation['action'],
+                $annotation['params']
+            );
         } else {
-            $instance->$class($this->_e->getApplication());
+            $this->_executeInstanceHook(
+                $instance,
+                $annotation['action'],
+                $annotation['params']
+            );
         }
     }
+
+    /**
+     * _executeStaticHook
+     *
+     * @param String $class  Class name
+     * @param String $method Method name
+     * @param mixed  $params Arguments
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    private function _executeStaticHook($class, $method, $params)
+    {
+        if (!\class_exists($class)) {
+            throw new \Exception(
+                'Class '
+                . $class
+                . ' doesn\'t exists. Forgot to include it?'
+            );
+        }
+        \call_user_func(
+            $method,
+            $this->e->getApplication(),
+            $params
+        );
+    }
+
+    /**
+     * _executeInstanceHook
+     *
+     * @param Object $instance Controller instance
+     * @param String $method   Method name
+     * @param mixed  $params   Arguments
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    private function _executeInstanceHook($instance, $method, $params)
+    {
+        if (!method_exists($instance, $method)) {
+            throw new \Exception(
+                'Class '
+                . \get_class($instance)
+                . ' has no method \'' . $method . '\''
+            );
+        }
+        $instance->$method($this->e->getApplication(), $params);
+    }
+
+    /**
+     * _parseAnnotationDefinition
+     *
+     * @param Object $annotation Annotation
+     *
+     * @return mixed
+     */
+    private function _parseAnnotationDefinition($annotation)
+    {
+        if (is_array($annotation)) {
+            $callback = array_shift($annotation);
+        }
+        $action = \lcfirst($callback);
+        $action = explode('::', $action);
+
+        if (isset($action[1])) {
+            $class = $action[0];
+            $method  = $callback;
+        } else {
+            $method = $action[0];
+            $class = null;
+        }
+
+        return array(
+            'class' => $class,
+            'action' => $method,
+            'params' => $annotation
+        );
+    }
+
 }

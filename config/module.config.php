@@ -16,6 +16,12 @@ return array(
         /**
          * Autoload annotations namespace
          */
-        'autoload' => array()
+        'autoload' => array(),
+        'event_handlers' => array(
+            'Desyncr\Annotations\Events\Init'     => 'Desyncr\Annotations\Annotations\Init',
+            'Desyncr\Annotations\Events\Dispatch' => 'Desyncr\Annotations\Annotations\Dispatch',
+            'Desyncr\Annotations\Events\Render'   => 'Desyncr\Annotations\Annotations\Render',
+            'Desyncr\Annotations\Events\Route'    => 'Desyncr\Annotations\Annotations\Route',
+        )
     )
 );

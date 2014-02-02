@@ -16,7 +16,6 @@ namespace Desyncr\Annotations\Annotations;
 /**
  * @Annotation
  */
-class Before
+class Before extends Init
 {
-    public $value;
 }

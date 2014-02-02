@@ -16,7 +16,6 @@ namespace Desyncr\Annotations\Annotations;
 /**
  * @Annotation
  */
-class After
+class After extends Route
 {
-    public $value;
 }
