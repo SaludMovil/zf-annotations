@@ -7,14 +7,13 @@
  * @category General
  * @package  Desyncr\Annotations\Events
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @version  GIT:<>
  * @link     https://me.syncr.com.ar
  */
 namespace Desyncr\Annotations\Events;
 
 use Zend\Mvc\MvcEvent;
-use Desyncr\Annotations\Handlers\Events;
 use Desyncr\Annotations\Handlers\Target;
 
 /**
@@ -23,7 +22,7 @@ use Desyncr\Annotations\Handlers\Target;
  * @category General
  * @package  Desyncr\Annotations\Events
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @link     https://me.syncr.com.ar
  */
 abstract class AbstractEvent implements EventInterface
@@ -44,22 +43,39 @@ abstract class AbstractEvent implements EventInterface
     protected $event;
 
     /**
+     * @var
+     */
+    protected $annotations;
+
+    /**
+     * Instance a new Events handles and annotation reader
+     *
+     * @param Object $handler Annotation handler
+     *
+     * @return mixed
+     */
+    public function __construct($handler)
+    {
+        $this->handler = $handler;
+    }
+
+    /**
      * Sets up the event
      *
-     * @param MvcEvent $e MvcEvent instance
+     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
      *
      * @return mixed
      */
     public function setUp(MvcEvent $e)
     {
         $this->target = new Target($e);
-        $this->handler = new Events($e);
+        $this->handler->setEvent($e);
     }
 
     /**
      * OnEvent handler
      *
-     * @param MvcEvent $e MvcEvent instance
+     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
      *
      * @return mixed
      */
@@ -85,7 +101,6 @@ abstract class AbstractEvent implements EventInterface
     {
         $this->event = $event;
     }
-
 
     /**
      * Gets the current event

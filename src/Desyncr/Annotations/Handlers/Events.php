@@ -7,13 +7,11 @@
  * @category General
  * @package  Desyncr\Annotation\Parser
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @version  GIT:<>
  * @link     https://me.syncr.com.ar
  */
 namespace Desyncr\Annotations\Handlers;
-
-use Desyncr\Annotations\Parser\Annotations;
 
 /**
  * Class Events
@@ -21,7 +19,7 @@ use Desyncr\Annotations\Parser\Annotations;
  * @category General
  * @package  Desyncr\Annotations\Handlers
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @link     https://me.syncr.com.ar
  */
 class Events
@@ -29,7 +27,12 @@ class Events
     /**
      * @var
      */
-    protected $e;
+    protected $sm;
+
+    /**
+     * @var
+     */
+    protected $event;
 
     /**
      * @var string
@@ -44,15 +47,18 @@ class Events
     /**
      * Set ups the annotation driver
      *
-     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
+     * @param \Zend\Mvc\ApplicationInterface                   $application App
+     * @param \Desyncr\Annotations\Parser\AnnotationsInterface $annotations Parser
      */
-    public function __construct($e)
+    public function __construct($application, $annotations)
     {
-        $this->e = $e;
-        $config = $e->getApplication()->getServiceManager()->get('config');
+        $this->application = $application;
+        $this->sm = $this->application->getServiceManager();
+
+        $config = $this->sm->get('config');
         $config = isset($config[$this->config]) ? $config[$this->config] : array();
 
-        $this->annotations = new Annotations($e);
+        $this->annotations = $annotations;
         $this->setUpEventHandlers($config);
     }
 
@@ -75,6 +81,18 @@ class Events
     }
 
     /**
+     * setEvent
+     *
+     * @param \Zend\Mvc\MvcEvent $event MvcEvent instance
+     *
+     * @return mixed
+     */
+    public function setEvent($event)
+    {
+        $this->event = $event;
+    }
+
+    /**
      * Handles a given MvcEvent
      *
      * @param Object $target Controller instance
@@ -84,8 +102,8 @@ class Events
      */
     public function handle($target, $event)
     {
-        $controller = $this->_handleAliases($target->getController());
-        $action     = $target->getAction() . 'Action';
+        $controller  = $this->_handleAliases($target->getController());
+        $action      = $target->getAction() . 'Action';
         $this->_handleEvent(
             $target->getInstance(),
             $controller,
@@ -103,7 +121,7 @@ class Events
      */
     private function _handleAliases($controller)
     {
-        $config = $this->e->getApplication()->getServiceManager()->get('config');
+        $config = $this->sm->get('config');
         $invokables = $config['controllers']['invokables'];
         $iterations = 0;
         $max = 10;
@@ -224,7 +242,7 @@ class Events
             );
         }
 
-        if ($handler->setUp($instance, $this->e, $annotation) !== false) {
+        if ($handler->setUp($instance, $this->event, $annotation) !== false) {
             $handler->execute($instance);
         }
         $handler->tearUp();
@@ -278,7 +296,7 @@ class Events
         }
         \call_user_func(
             $method,
-            $this->e->getApplication(),
+            $this->application,
             $params
         );
     }
@@ -302,7 +320,7 @@ class Events
                 . ' has no method \'' . $method . '\''
             );
         }
-        $instance->$method($this->e->getApplication(), $params);
+        $instance->$method($this->application, $params);
     }
 
     /**

@@ -1,13 +1,13 @@
 <?php
 /**
- * Module annotation parser.
+ * Module annotation parser
  *
  * PHP version 5.4
  *
  * @category General
  * @package  Desyncr\Annotations\Parser
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @version  GIT:<>
  * @link     https://me.syncr.com.ar
  */
@@ -23,10 +23,10 @@ use Doctrine\Common\Annotations\FileCacheReader;
  * @category General
  * @package  Desyncr\Annotations\Parser
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @link     https://me.syncr.com.ar
  */
-class Annotations
+class Annotations implements AnnotationsInterface
 {
     /**
      * @var \Doctrine\Common\Annotations\AnnotationReader|null
@@ -41,24 +41,24 @@ class Annotations
     /**
      * Registers the Annotation reader
      *
-     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
+     * @param \Zend\Mvc\ApplicationInterface $application Application instance
      */
-    public function __construct($e)
+    public function __construct($application)
     {
-        $config = $this->getConfiguration($e);
+        $config = $this->getConfiguration($application);
         $this->ar = $this->setUpAnnotationReader($config);
     }
 
     /**
      * getConfiguration
      *
-     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
+     * @param \Zend\Mvc\ApplicationInterface $application Application instance
      *
      * @return mixed
      */
-    protected function getConfiguration($e)
+    protected function getConfiguration($application)
     {
-        $config = $e->getApplication()->getServiceManager()->get('config');
+        $config = $application->getServiceManager()->get('config');
         return isset($config[$this->config]) ? $config[$this->config] : array();
     }
 

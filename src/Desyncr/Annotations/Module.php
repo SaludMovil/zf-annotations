@@ -7,7 +7,7 @@
  * @category General
  * @package  Desyncr\Annotations
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @version  GIT:<>
  * @link     https://me.syncr.com.ar
  */
@@ -17,6 +17,8 @@ use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
+use Desyncr\Annotations\Handlers\Events;
+use Desyncr\Annotations\Parser\Annotations;
 
 /**
  * Class Module
@@ -24,7 +26,7 @@ use Zend\Mvc\MvcEvent;
  * @category General
  * @package  Desyncr\Annotations
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @link     https://me.syncr.com.ar
  */
 class Module implements
@@ -41,27 +43,28 @@ class Module implements
      */
     public function onBootstrap(MvcEvent $e)
     {
-        $app    = $e->getApplication();
-        $em     = $app->getEventManager();
-        $sm     = $em->getSharedManager();
+        $app = $e->getApplication();
+        $em  = $app->getEventManager();
+        $sm  = $em->getSharedManager();
 
+        $handler = new Events($app, new Annotations($app));
         $sm->attach(
             'Zend\Mvc\Controller\AbstractActionController',
             MvcEvent::EVENT_DISPATCH,
-            array(new \Desyncr\Annotations\Events\Init, 'onEvent'),
+            array(new \Desyncr\Annotations\Events\Init($handler), 'onEvent'),
             100
         );
         $em->attach(
             MvcEvent::EVENT_DISPATCH,
-            array(new \Desyncr\Annotations\Events\Dispatch, 'onEvent')
+            array(new \Desyncr\Annotations\Events\Dispatch($handler), 'onEvent')
         );
         $em->attach(
             MvcEvent::EVENT_RENDER,
-            array(new \Desyncr\Annotations\Events\Render, 'onEvent')
+            array(new \Desyncr\Annotations\Events\Render($handler), 'onEvent')
         );
         $em->attach(
             MvcEvent::EVENT_ROUTE,
-            array(new \Desyncr\Annotations\Events\Route, 'onEvent')
+            array(new \Desyncr\Annotations\Events\Route($handler), 'onEvent')
         );
     }
 

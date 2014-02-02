@@ -1,14 +1,13 @@
 <?php
-
 /**
- * Annotations\AnnotationHandlerInterface.
+ * Annotations\AnnotationHandlerInterface
  *
  * PHP version 5.4
  *
  * @category General
  * @package  Desyncr\Annotations\Handlers
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @version  GIT:<>
  * @link     https://me.syncr.com.ar
  */
@@ -20,7 +19,7 @@ namespace Desyncr\Annotations\Handlers;
  * @category General
  * @package  Desyncr\Annotations\Handlers
  * @author   Dario Cavuotti <dc@syncr.com.ar>
- * @license  http://gpl.gnu.org GPL-3.0+
+ * @license  https://www.gnu.org/licenses/gpl.html GPL-3.0+
  * @link     https://me.syncr.com.ar
  */
 interface AnnotationHandlerInterface
