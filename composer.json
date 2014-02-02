@@ -1,13 +1,32 @@
 {
     "name": "desyncr/zf-annotations",
-    "version": "0.0.1",
-    "description": "ZF Annotations is a ZF2 module for custom annotations.",
+    "version": "0.1.0",
+    "description": "ZF Annotations is a ZF2 module for custom annotations",
+    "type": "module",
+    "license": "GPL-3.0+",
+    "homepage": "http://github.com/desyncr/zf-annotations",
+    "keywords": [
+        "zend2", "zf2", "module", "annotations"
+    ],
+    "authors": [
+        {
+            "name": "Dario Cavuotti",
+            "email": "dc@syncr.com.ar",
+            "homepage": "http://me.syncr.com.ar",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
     "require": {
-        "php": ">=5.3.0"
+        "php": ">=5.3.0",
+        "zendframework/zendframework": "2.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
     },
     "autoload": {
         "psr-0": {
-            "Desyncr\\ZfAnnotations": "src/"
+            "Desyncr\\Annotations": "src/"
         }
     }
 }
