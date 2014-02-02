@@ -32,6 +32,11 @@ class Events
     protected $e;
 
     /**
+     * @var string
+     */
+    protected $config = 'zf-annotations';
+
+    /**
      * @var
      */
     protected $eventHandlers;
@@ -45,6 +50,7 @@ class Events
     {
         $this->e = $e;
         $config = $e->getApplication()->getServiceManager()->get('config');
+        $config = isset($config[$this->config]) ? $config[$this->config] : array();
 
         $this->annotations = new Annotations($e);
         $this->setUpEventHandlers($config);
@@ -60,8 +66,8 @@ class Events
      */
     protected function setUpEventHandlers($config)
     {
-        if (isset($config['zf-annotations']['event_handlers'])) {
-            $this->eventHandlers = $config['zf-annotations']['event_handlers'];
+        if (isset($config['event_handlers'])) {
+            $this->eventHandlers = $config['event_handlers'];
         } else {
             throw new \Exception('No event handlers defined!');
         }
@@ -129,7 +135,6 @@ class Events
         if (isset($this->$annotations)) {
             $this->_handleAnnotations(
                 $instance,
-                $controller,
                 $event,
                 $this->$annotations
             );
@@ -140,7 +145,6 @@ class Events
      * Handles all annotations
      *
      * @param Object $instance       Controller instance
-     * @param String $controller     Controller class name
      * @param String $event          Event class name
      * @param Array  $arrAnnotations Annotations array
      *
@@ -148,7 +152,6 @@ class Events
      */
     private function _handleAnnotations(
         $instance,
-        $controller,
         $event,
         $arrAnnotations
     ) {

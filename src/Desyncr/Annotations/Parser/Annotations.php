@@ -13,8 +13,9 @@
  */
 namespace Desyncr\Annotations\Parser;
 
-use \Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\Common\Annotations\FileCacheReader;
 
 /**
  * Class Annotations
@@ -33,14 +34,32 @@ class Annotations
     protected $ar = null;
 
     /**
+     * @var string
+     */
+    protected $config = 'zf-annotations';
+
+    /**
      * Registers the Annotation reader
      *
      * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
      */
     public function __construct($e)
     {
-        $config = $e->getApplication()->getServiceManager()->get('config');
+        $config = $this->getConfiguration($e);
         $this->ar = $this->setUpAnnotationReader($config);
+    }
+
+    /**
+     * getConfiguration
+     *
+     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
+     *
+     * @return mixed
+     */
+    protected function getConfiguration($e)
+    {
+        $config = $e->getApplication()->getServiceManager()->get('config');
+        return isset($config[$this->config]) ? $config[$this->config] : array();
     }
 
     /**
@@ -52,48 +71,67 @@ class Annotations
      */
     protected function setUpAnnotationReader($config)
     {
-        $autoload = array('Desyncr\\Annotations' => __DIR__ . '/../../../');
+        $autoload = isset($config['autoload']) ? $config['autoload'] : array();
+        $this->_registerAutoloadNamespace($autoload);
 
-        if (isset($config['zf-annotations']['autoload'])) {
-            $autoload = array_replace_recursive(
-                $autoload,
-                $config['zf-annotations']['autoload']
-            );
-        }
+        $reader = new FileCacheReader(
+            new AnnotationReader(),
+            $config['cache'],
+            $debug = $config['debug']
+        );
+
+        return $reader;
+    }
+
+    /**
+     * _registerAutoloadNamespace
+     *
+     * @param Array $ns Autoload namespaces array
+     *
+     * @return mixed
+     */
+    private function _registerAutoloadNamespace($ns)
+    {
+        $default = array('Desyncr\\Annotations' => __DIR__ . '/../../../');
+        $autoload = array_replace_recursive($default, $ns);
 
         foreach ($autoload as $ns => $path) {
             AnnotationRegistry::registerAutoloadNamespace($ns, $path);
         }
-
-        return new AnnotationReader();
     }
+
     /**
-     * Reads the annotations for a given class and method (optional).
+     * Reads the annotations for a given class.
      *
-     * @param String      $controllerClass Controller class to annotate
-     * @param String|null $method          Method to get annotations from
+     * @param String $class Class name
      *
      * @return mixed
      */
-    public function getAnnotations($controllerClass, $method = null)
+    public function getClassAnnotations($class)
     {
-        switch ($method) {
-        case null:
-            if (!isset($this->$controllerClass)) {
-                $this->$controllerClass = new \ReflectionClass($controllerClass);
-            }
-
-            return $this->ar->getClassAnnotations($this->$controllerClass);
-
-        default:
-            $controllerMethodClass = $controllerClass . $method;
-            if (!isset($this->$controllerMethodClass)) {
-                $this->$controllerMethodClass
-                    = new \ReflectionMethod($controllerClass, $method);
-            }
-
-            return $this->ar->getMethodAnnotations($this->$controllerMethodClass);
+        if (!isset($this->$class)) {
+            $this->$class = new \ReflectionClass($class);
         }
+
+        return $this->ar->getClassAnnotations($this->$class);
+    }
+
+    /**
+     * Reads the annotations for a given class method.
+     *
+     * @param String $class  Class name
+     * @param String $method Method name
+     *
+     * @return mixed
+     */
+    public function getMethodAnnotations($class, $method)
+    {
+        $methodClass = $class . $method;
+        if (!isset($this->$methodClass)) {
+            $this->$methodClass = new \ReflectionMethod($class, $method);
+        }
+
+        return $this->ar->getMethodAnnotations($this->$methodClass);
     }
 
     /**
@@ -106,13 +144,9 @@ class Annotations
      */
     public function getAllAnnotations($controllerClass, $method)
     {
-        // Get class annotations
-        $annotations = $this->getAnnotations($controllerClass, null);
-
-        // Get methods annotations
         $annotations = array_merge(
-            $annotations,
-            $this->getAnnotations($controllerClass, $method)
+            $this->getClassAnnotations($controllerClass),
+            $this->getMethodAnnotations($controllerClass, $method)
         );
 
         return $annotations;
