@@ -11,4 +11,11 @@
  * @version  GIT:<>
  * @link     https://me.syncr.com.ar
  */
-return array();
+return array(
+    'zf-annotations' => array(
+        /**
+         * Autoload annotations namespace
+         */
+        'autoload' => array()
+    )
+);

@@ -39,7 +39,7 @@ class Events
     public function __construct($e)
     {
         $this->_e = $e;
-        $this->annotations = new Annotations;
+        $this->annotations = new Annotations($e);
     }
 
     /**

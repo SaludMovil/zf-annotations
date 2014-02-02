@@ -34,16 +34,40 @@ class Annotations
 
     /**
      * Registers the Annotation reader
+     *
+     * @param \Zend\Mvc\MvcEvent $e MvcEvent instance
      */
-    public function __construct()
+    public function __construct($e)
     {
-        AnnotationRegistry::registerAutoloadNamespace(
-            "Desyncr\\Annotations",
-            __DIR__ . '/../../../'
-        );
-        $this->ar = new AnnotationReader();
+        $config = $e->getApplication()->getServiceManager()->get('config');
+        $this->ar = $this->setUpAnnotationReader($config);
     }
 
+    /**
+     * setUpAnnotationReader
+     *
+     * @param mixed $config Configuration
+     *
+     * @return mixed
+     */
+    protected function setUpAnnotationReader($config)
+    {
+        $autoload = array();
+        $autoload[] = array('Desyncr\\Annotations', __DIR__ . '/../../../');
+
+        if (isset($config['zf-annotations']['autoload'])) {
+            $autoload = array_replace_recursive(
+                $autoload,
+                $config['zf-annotations']['autoload']
+            );
+        }
+
+        foreach ($autoload as $ns => $path) {
+            AnnotationRegistry::registerAutoloadNamespace($ns, $path);
+        }
+
+        return new AnnotationReader();
+    }
     /**
      * Reads the annotations for a given class and method (optional).
      *
