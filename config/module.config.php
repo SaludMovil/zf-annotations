@@ -36,5 +36,10 @@ return array(
          * AnnotationReader cache debug (set to true for development)
          */
         'debug' => true,
+
+        /**
+         * Throws Exceptions or be silent
+         */
+        'silent' => false,
     )
 );

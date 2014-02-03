@@ -39,6 +39,11 @@ class Annotations implements AnnotationsInterface
     protected $config = 'zf-annotations';
 
     /**
+     * @var bool
+     */
+    protected $silent = false;
+
+    /**
      * Registers the Annotation reader
      *
      * @param \Zend\Mvc\ApplicationInterface $application Application instance
@@ -46,6 +51,7 @@ class Annotations implements AnnotationsInterface
     public function __construct($application)
     {
         $config = $this->getConfiguration($application);
+        $this->silent = $config['silent'];
         $this->ar = $this->setUpAnnotationReader($config);
     }
 
@@ -106,6 +112,7 @@ class Annotations implements AnnotationsInterface
      * @param String $class Class name
      *
      * @return mixed
+     * @throws \Exception
      */
     public function getClassAnnotations($class)
     {
@@ -123,6 +130,7 @@ class Annotations implements AnnotationsInterface
      * @param String $method Method name
      *
      * @return mixed
+     * @throws \Exception
      */
     public function getMethodAnnotations($class, $method)
     {
@@ -141,13 +149,23 @@ class Annotations implements AnnotationsInterface
      * @param String|null $method          Method to get annotations from
      *
      * @return mixed
+     * @throws \Exception
      */
     public function getAllAnnotations($controllerClass, $method)
     {
-        $annotations = array_merge(
-            $this->getClassAnnotations($controllerClass),
-            $this->getMethodAnnotations($controllerClass, $method)
-        );
+        try {
+            $annotations = array_merge(
+                $this->getClassAnnotations($controllerClass),
+                $this->getMethodAnnotations($controllerClass, $method)
+            );
+
+        } catch (\Exception $e) {
+            if (!$this->silent) {
+                throw $e;
+            } else {
+                return array();
+            }
+        }
 
         return $annotations;
     }
