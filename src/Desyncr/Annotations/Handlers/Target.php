@@ -56,7 +56,7 @@ class Target
         $this->instance     = $e->getTarget();
         $this->matches      = $e->getRouteMatch();
         if ($this->matches) {
-            $this->controller   = $this->matches->getParam('controller');
+            $this->controller   = \ucfirst($this->matches->getParam('controller'));
             $namespace = $this->matches->getParam('__NAMESPACE__');
             if (!stristr($this->controller, $namespace)) {
                 $this->controller = $namespace . "\\" . $this->controller;
