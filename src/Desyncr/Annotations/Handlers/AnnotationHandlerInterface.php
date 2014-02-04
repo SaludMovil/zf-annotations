@@ -27,22 +27,22 @@ interface AnnotationHandlerInterface
     /**
      * General function.
      *
-     * @param Object             $instance   Controller instance
-     * @param \Zend\Mvc\MvcEvent $context    Event instance
-     * @param Object             $annotation Annotation object
+     * @param Object                $instance    Controller instance
+     * @param \Zend\Mvc\MvcEvent    $context     Event instance
+     * @param \Zend\Mvc\Application $application Annotation object
      *
      * @return mixed
      */
-    public function setUp($instance, $context, $annotation);
+    public function setUp($instance, $context, $application);
 
     /**
      * Execute handler main logic
      *
-     * @param Object $instance Controller instance
+     * @param Object $annotation Annotation instance
      *
      * @return mixed
      */
-    public function execute($instance);
+    public function execute($annotation);
 
     /**
      * Removed any open handler

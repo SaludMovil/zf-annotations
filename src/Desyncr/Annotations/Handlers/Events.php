@@ -104,6 +104,7 @@ class Events
     {
         $controller  = $this->_handleAliases($target->getController());
         $action      = $target->getAction() . 'Action';
+
         $this->_handleEvent(
             $target->getInstance(),
             $controller,
@@ -242,8 +243,8 @@ class Events
             );
         }
 
-        if ($handler->setUp($instance, $this->event, $annotation) !== false) {
-            $handler->execute($instance);
+        if ($handler->setUp($instance, $this->event, $this->application) !== false) {
+            $handler->execute($annotation);
         }
         $handler->tearUp();
     }
@@ -296,8 +297,9 @@ class Events
         }
         \call_user_func(
             $method,
-            $this->application,
-            $params
+            $params,
+            $this->event,
+            $this->application
         );
     }
 
@@ -320,7 +322,7 @@ class Events
                 . ' has no method \'' . $method . '\''
             );
         }
-        $instance->$method($this->application, $params);
+        $instance->$method($params, $this->event, $this->application);
     }
 
     /**
@@ -334,6 +336,8 @@ class Events
     {
         if (is_array($annotation)) {
             $callback = array_shift($annotation);
+        } else {
+            $callback = $annotation;
         }
         $action = \lcfirst($callback);
         $action = explode('::', $action);

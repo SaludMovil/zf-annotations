@@ -16,6 +16,6 @@ namespace Desyncr\Annotations\Annotations;
 /**
  * @Annotation
  */
-class After extends Route
+class After extends Dispatch
 {
 }
