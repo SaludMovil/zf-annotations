@@ -1,6 +1,6 @@
 {
     "name": "desyncr/zf-annotations",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "ZF Annotations is a ZF2 module for custom annotations",
     "type": "module",
     "license": "GPL-3.0+",
