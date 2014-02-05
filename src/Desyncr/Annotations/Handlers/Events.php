@@ -126,6 +126,11 @@ class Events
         $invokables = $config['controllers']['invokables'];
         $iterations = 0;
         $max = 10;
+
+        // Remove backslash from namespace
+        if ($controller[0] == "\\") {
+            $controller = substr($controller, 1);
+        }
         while ($iterations < $max && isset($invokables[$controller])) {
             $controller = $invokables[$controller];
             $iterations++;
@@ -175,6 +180,7 @@ class Events
         $arrAnnotations
     ) {
         foreach ($arrAnnotations as $annotation) {
+
             if (!$this->_handlesEvent($annotation, $event)) {
                 continue;
             }
@@ -210,6 +216,7 @@ class Events
         if (!isset($this->eventHandlers[$event])) {
             return false;
         }
+
         $eventHandler = $this->eventHandlers[$event];
         if (\get_class($annotation) == $eventHandler
             || in_array(
